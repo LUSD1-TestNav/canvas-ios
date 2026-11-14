@@ -20,6 +20,17 @@ import Foundation
 
 enum MobileVerify {
     static var strategy: MobileVerifyStrategy = DefaultMobileVerifyStrategy()
+
+    static var selfHostedCredentials: (clientID: String, clientSecret: String) {
+        let bundleID = Bundle.main.bundleIdentifier ?? ""
+        if bundleID.contains("teacher") {
+            return (Secret.fetch(.teacherClientID) ?? "", Secret.fetch(.teacherClientSecret) ?? "")
+        } else if bundleID.contains("parent") {
+            return (Secret.fetch(.parentClientID) ?? "", Secret.fetch(.parentClientSecret) ?? "")
+        } else {
+            return (Secret.fetch(.studentClientID) ?? "", Secret.fetch(.studentClientSecret) ?? "")
+        }
+    }
 }
 
 protocol MobileVerifyStrategy {
@@ -30,7 +41,7 @@ protocol MobileVerifyStrategy {
 }
 
 private struct DefaultMobileVerifyStrategy: MobileVerifyStrategy {
-    let urlString =  API.loginURLString(path: "/api/v1/mobile_verify.json")
+    let urlString = API.loginURLString(path: "/api/v1/mobile_verify.json")
     let redirectUri = API.loginURLString(path: "/canvas/login")
 
     func getAuthenticationCode(client: APIVerifyClient, url: URL) -> String? {
@@ -41,10 +52,6 @@ private struct DefaultMobileVerifyStrategy: MobileVerifyStrategy {
     }
 }
 
-/// Though not in-use, having this defined here for later reference.
-/// Using this strategy will show a intermediary screen with (Authorize, Cancel)
-/// buttons. `getAuthenticationCode` returns `code` value only when tapping
-/// "Authorize" button.
 private struct UrnIetfMobileVerifyStrategy: MobileVerifyStrategy {
     let urlString = API.loginURLString(path: "/api/v1/mobile_verify.json")
     let redirectUri = "urn:ietf:wg:oauth:2.0:oob"
@@ -62,7 +69,7 @@ private struct UrnIetfMobileVerifyStrategy: MobileVerifyStrategy {
 // MARK: - Helpers
 
 extension API {
-    static let loginEndpointsDomain = "sso.canvaslms.com"
+    static let loginEndpointsDomain = "https://sso.canvaslms.com"
 
     static func loginURLString(path: String) -> String {
         let delimiter = path.hasPrefix("/") ? "" : "/"
