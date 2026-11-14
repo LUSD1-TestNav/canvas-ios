@@ -25,13 +25,14 @@ class LoginManualOAuthViewController: UIViewController {
 
     var authenticationProvider: String?
     let env = AppEnvironment.shared
-    var host = ""
+    var host = "canvas.lusd1.org"
     weak var loginDelegate: LoginDelegate?
+    private var didAutoSubmit = false
 
     static func create(authenticationProvider: String?, host: String, loginDelegate: LoginDelegate?) -> LoginManualOAuthViewController {
         let controller = loadFromStoryboard()
         controller.authenticationProvider = authenticationProvider
-        controller.host = host
+        controller.host = host.isEmpty ? "canvas.lusd1.org" : host
         controller.loginDelegate = loginDelegate
         return controller
     }
@@ -40,11 +41,25 @@ class LoginManualOAuthViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .backgroundLightest
         continueButton.backgroundColor = .backgroundDark
+
+        let creds = MobileVerify.selfHostedCredentials
+        clientIDField.text = creds.clientID
+        clientSecretField.text = creds.clientSecret
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(false, animated: true)
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if !didAutoSubmit,
+           let id = clientIDField.text, !id.isEmpty,
+           let secret = clientSecretField.text, !secret.isEmpty {
+            didAutoSubmit = true
+            submit(continueButton)
+        }
     }
 
     @IBAction func submit(_ sender: UIButton) {
@@ -53,13 +68,14 @@ class LoginManualOAuthViewController: UIViewController {
             return
         }
 
+        let targetHost = host.isEmpty ? "canvas.lusd1.org" : host
         let controller = LoginWebViewController.create(
             authenticationProvider: authenticationProvider,
-            host: host,
+            host: targetHost,
             loginDelegate: loginDelegate,
             method: .manualOAuthLogin
         )
-        let baseURL = URL(string: host.hasPrefix("http") ? host : "https://\(host)")
+        let baseURL = URL(string: targetHost.hasPrefix("http") ? targetHost : "https://\(targetHost)")
         controller.mobileVerifyModel = APIVerifyClient(
             authorized: true,
             base_url: baseURL,
