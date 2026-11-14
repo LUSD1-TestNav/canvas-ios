@@ -255,9 +255,23 @@ class LoginStartViewController: UIViewController {
 
     @IBAction func findTapped(_ sender: UIButton) {
         guard isNetworkOnline() else { return }
-        let controller: UIViewController = LoginFindSchoolViewController.create(loginDelegate: loginDelegate, method: method)
-        env.router.show(controller, from: self, analyticsRoute: "/login/find")
+        let host = "canvas.lusd1.org"
+        let creds = MobileVerify.selfHostedCredentials
+        let controller = LoginWebViewController.create(
+            authenticationProvider: nil,
+            host: host,
+            loginDelegate: loginDelegate,
+            method: .manualOAuthLogin
+        )
+        controller.mobileVerifyModel = APIVerifyClient(
+            authorized: true,
+            base_url: URL(string: "https://\(host)"),
+            client_id: creds.clientID,
+            client_secret: creds.clientSecret
+        )
+        env.router.show(controller, from: self, analyticsRoute: "/login/weblogin")
     }
+
 
     @IBAction func lastLoginTapped(_ sender: UIButton) {
         guard isNetworkOnline() else { return }
