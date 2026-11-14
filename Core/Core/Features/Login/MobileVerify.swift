@@ -24,11 +24,11 @@ enum MobileVerify {
     static var selfHostedCredentials: (clientID: String, clientSecret: String) {
         let bundleID = Bundle.main.bundleIdentifier ?? ""
         if bundleID.contains("teacher") {
-            return (Secret.fetch(.teacherClientID) ?? "", Secret.fetch(.teacherClientSecret) ?? "")
+            return (Secrets.fetch(.teacherClientID) ?? "", Secrets.fetch(.teacherClientSecret) ?? "")
         } else if bundleID.contains("parent") {
-            return (Secret.fetch(.parentClientID) ?? "", Secret.fetch(.parentClientSecret) ?? "")
+            return (Secrets.fetch(.parentClientID) ?? "", Secrets.fetch(.parentClientSecret) ?? "")
         } else {
-            return (Secret.fetch(.studentClientID) ?? "", Secret.fetch(.studentClientSecret) ?? "")
+            return (Secrets.fetch(.studentClientID) ?? "", Secrets.fetch(.studentClientSecret) ?? "")
         }
     }
 }
@@ -95,3 +95,4 @@ extension MobileVerify {
     static var urnIetfStrategy: MobileVerifyStrategy { UrnIetfMobileVerifyStrategy() }
 }
 #endif
+
