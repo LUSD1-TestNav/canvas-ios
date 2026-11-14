@@ -18,6 +18,47 @@ jobs:
       - name: Select latest Xcode
         run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
+      - name: Generate Secrets.swift
+        env:
+          STUDENT_ID: ${{ secrets.STUDENT_CLIENT_ID }}
+          STUDENT_SECRET: ${{ secrets.STUDENT_CLIENT_SECRET }}
+          TEACHER_ID: ${{ secrets.TEACHER_CLIENT_ID }}
+          TEACHER_SECRET: ${{ secrets.TEACHER_CLIENT_SECRET }}
+          PARENT_ID: ${{ secrets.PARENT_CLIENT_ID }}
+          PARENT_SECRET: ${{ secrets.PARENT_CLIENT_SECRET }}
+        run: |
+          cat << EOF > Core/Core/Secrets.swift
+          import Foundation
+
+          public enum SecretKey {
+              case studentClientID
+              case studentClientSecret
+              case teacherClientID
+              case teacherClientSecret
+              case parentClientID
+              case parentClientSecret
+          }
+
+          public enum Secrets {
+              public static func fetch(_ key: SecretKey) -> String? {
+                  switch key {
+                  case .studentClientID:
+                      return "$STUDENT_ID"
+                  case .studentClientSecret:
+                      return "$STUDENT_SECRET"
+                  case .teacherClientID:
+                      return "$TEACHER_ID"
+                  case .teacherClientSecret:
+                      return "$TEACHER_SECRET"
+                  case .parentClientID:
+                      return "$PARENT_ID"
+                  case .parentClientSecret:
+                      return "$PARENT_SECRET"
+                  }
+              }
+          }
+          EOF
+
       - name: Install build dependencies
         run: |
           brew install xcodegen yarn
