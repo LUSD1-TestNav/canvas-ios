@@ -261,7 +261,7 @@ class LoginStartViewController: UIViewController {
             authenticationProvider: nil,
             host: host,
             loginDelegate: loginDelegate,
-            method: .manualOAuthLogin
+            method: .normalLogin
         )
         controller.mobileVerifyModel = APIVerifyClient(
             authorized: true,
